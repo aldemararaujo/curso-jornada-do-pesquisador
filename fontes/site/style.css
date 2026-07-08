@@ -256,6 +256,56 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .done-flag{display:inline-flex;align-items:center;gap:.5em;padding:.5em 1.1em;border-radius:99px;
   background:#edf9f2;color:#1d6b47;font-weight:700;font-size:.9rem}
 
+/* ============ GAMIFICAÇÃO ============ */
+.lvl-chip{display:inline-flex;align-items:center;gap:.5em;padding:.35em .9em;border:1px solid rgba(245,185,66,.4);
+  border-radius:999px;font-size:.8rem;white-space:nowrap;cursor:pointer;transition:background .12s}
+.lvl-chip:hover{background:rgba(245,185,66,.12)}
+.lvl-chip .lv-ico{font-size:1rem}
+.lvl-chip .lv-name{font-weight:700;color:var(--amber-2)}
+.lvl-chip .lv-xp{color:var(--txt-dim);font-variant-numeric:tabular-nums}
+.streak-chip{font-size:.85rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.streak-chip.off{opacity:.45;filter:grayscale(1)}
+.sb-item.locked{opacity:.45;cursor:not-allowed}
+.sb-item.locked .dot{border-style:dashed;font-size:.6rem}
+.sb-item.sb-jornada{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:4px;font-weight:700;color:var(--amber-2)}
+.xp-hint{font-size:.72rem;font-weight:700;letter-spacing:.05em;color:var(--amber-deep);background:rgba(245,185,66,.15);
+  padding:.3em .8em;border-radius:99px;margin-left:auto}
+
+/* painel Minha Jornada */
+.jornada{max-width:860px;margin:0 auto;padding:48px 34px 90px}
+.lv-card{display:flex;gap:22px;align-items:center;margin-top:26px;padding:26px 30px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--ink),var(--ink-3));color:#fff}
+.lv-card .lv-big{font-size:3.2rem;line-height:1;flex:none}
+.lv-card .lv-info{flex:1;min-width:0}
+.lv-card .lv-title{font-size:1.4rem;font-weight:800;letter-spacing:-.01em}
+.lv-card .lv-sub{color:var(--txt-dim);font-size:.92rem;margin-top:4px}
+.lv-card .lv-sub b{color:var(--amber-2)}
+.lv-card .lv-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.12);margin-top:12px;overflow:hidden}
+.lv-card .lv-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--amber-2),var(--amber));transition:width .5s}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.stats-grid .st{background:#fff;border:1px solid var(--paper-line);border-radius:12px;padding:14px 18px;text-align:center}
+.stats-grid .st b{display:block;font-size:1.4rem;color:var(--ink);letter-spacing:-.01em}
+.stats-grid .st span{font-size:.78rem;color:var(--ptxt-dim)}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.badge{background:#fff;border:1px solid var(--paper-line);border-radius:12px;padding:18px;text-align:center;
+  display:flex;flex-direction:column;gap:4px;align-items:center}
+.badge .bd-ico{font-size:2rem;line-height:1.2}
+.badge b{font-size:.92rem;color:var(--ink)}
+.badge .bd-desc{font-size:.78rem;color:var(--ptxt-dim)}
+.badge .bd-date{font-size:.72rem;font-weight:700;margin-top:4px;color:var(--ptxt-dim)}
+.badge:not(.won){opacity:.55}
+.badge:not(.won) .bd-ico{filter:grayscale(1)}
+.badge.won{border-color:var(--amber);box-shadow:0 4px 18px rgba(245,185,66,.18)}
+.badge.won .bd-date{color:var(--amber-deep)}
+.free-box{margin-top:36px;background:#fff;border:1px dashed var(--paper-line);border-radius:12px;padding:16px 20px}
+.free-box label{display:flex;gap:12px;align-items:center;cursor:pointer;color:var(--ptxt)}
+.free-box input{width:18px;height:18px;accent-color:var(--amber-deep)}
+@media (max-width:640px){
+  .jornada{padding:34px 20px 70px}
+  .lv-card{flex-direction:column;text-align:center}
+  .topbar .lvl-chip .lv-name{display:none}
+}
+
 /* ============ CERTIFICADO ============ */
 .cert-page{max-width:960px;margin:0 auto;padding:48px 34px 90px}
 .cert-form{background:#fff;border:1px solid var(--paper-line);border-radius:var(--r);padding:26px;margin:26px 0;

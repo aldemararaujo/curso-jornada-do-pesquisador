@@ -9,20 +9,128 @@ const PHASES = [
   { id: 4, label: "Além da jornada", icon: "🌅" },
 ];
 
+/* ---------- gamificação: configuração ---------- */
+const GAME = { modulo: 100, primeira: 25, retentativa: 10, checklist: 20, medalha: 50 };
+
+const LEVELS = [
+  { xp: 0, icon: "🌱", name: "Curioso" },
+  { xp: 200, icon: "🧭", name: "Chamado pela Dúvida" },
+  { xp: 500, icon: "💡", name: "Formulador de Perguntas" },
+  { xp: 900, icon: "📚", name: "Explorador da Literatura" },
+  { xp: 1400, icon: "📐", name: "Projetista Científico" },
+  { xp: 2000, icon: "🔬", name: "Coletor de Dados" },
+  { xp: 2700, icon: "📊", name: "Analista de Evidências" },
+  { xp: 3400, icon: "📣", name: "Comunicador Científico" },
+  { xp: 4100, icon: "🏆", name: "Cientista Publicado" },
+];
+
+const BADGES = [
+  { id: "primeiro-passo", icon: "🧭", name: "Primeiro Passo", desc: "Conclua o módulo de boas-vindas", when: s => !!s.done["boas-vindas"] },
+  { id: "ideia-brilhante", icon: "💡", name: "Ideia Brilhante", desc: "Conclua o módulo Lapidando a Ideia Brilhante", when: s => !!s.done["lapidando-a-ideia"] },
+  { id: "planejador", icon: "🗺️", name: "Planejador", desc: "Complete todos os módulos da Fase 1 — Planejar", when: s => faseDone(s, 1) },
+  { id: "executor", icon: "⚙️", name: "Executor", desc: "Complete todos os módulos da Fase 2 — Executar", when: s => faseDone(s, 2) },
+  { id: "divulgador", icon: "📣", name: "Divulgador", desc: "Complete todos os módulos da Fase 3 — Divulgar", when: s => faseDone(s, 3) },
+  { id: "quiz-perfeito", icon: "🎯", name: "Quiz Perfeito", desc: "Acerte todas as questões de um quiz na primeira tentativa", when: s => LESSONS.some(l => l.quiz && l.quiz.length && l.quiz.every((_, i) => (s.quiz[l.id] || {})[i] === "p")) },
+  { id: "mente-afiada", icon: "🧠", name: "Mente Afiada", desc: "Acerte 20 questões na primeira tentativa", when: s => countFirstTry(s) >= 20 },
+  { id: "metodico", icon: "✅", name: "Metódico", desc: "Complete 5 checklists práticos inteiros", when: s => LESSONS.filter(l => checklistDone(s, l)).length >= 5 },
+  { id: "constancia", icon: "🔥", name: "Constância", desc: "Estude 3 dias seguidos", when: s => s.streak.best >= 3 },
+  { id: "disciplina", icon: "⚡", name: "Disciplina", desc: "Estude 7 dias seguidos", when: s => s.streak.best >= 7 },
+  { id: "jornada-completa", icon: "🏔️", name: "Jornada Completa", desc: "Conclua todos os módulos do curso", when: s => LESSONS.every(l => s.done[l.id]) },
+  { id: "legado", icon: "📜", name: "Legado", desc: "Gere seu certificado de conclusão com nome", when: s => !!s.certGen },
+];
+
 /* ---------- estado ---------- */
 const KEY = "jdp-curso-v1";
 const state = load();
 function load() {
-  try { return Object.assign({ done: {}, quiz: {}, check: {}, name: "", last: "" }, JSON.parse(localStorage.getItem(KEY) || "{}")); }
-  catch { return { done: {}, quiz: {}, check: {}, name: "", last: "" }; }
+  let raw = {};
+  try { raw = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
+  const s = Object.assign({
+    done: {}, quiz: {}, check: {}, name: "", last: "",
+    badges: {}, streak: { last: "", days: 0, best: 0 }, free: false, certGen: false,
+  }, raw);
+  s.streak = Object.assign({ last: "", days: 0, best: 0 }, s.streak || {});
+  // migração: quizzes antigos gravavam true/false → 'ok' (não dá para saber se foi de primeira) / 'x'
+  Object.values(s.quiz).forEach(qz => {
+    Object.keys(qz).forEach(k => {
+      if (qz[k] === true) qz[k] = "ok";
+      else if (qz[k] === false) qz[k] = "x";
+    });
+  });
+  return s;
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+function save() { evalBadges(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
 
 const $ = (sel, el) => (el || document).querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const doneCount = () => LESSONS.filter(l => state.done[l.id]).length;
 const pct = () => Math.round(doneCount() / LESSONS.length * 100);
+
+/* ---------- gamificação: derivações ---------- */
+function faseDone(s, fase) {
+  const mods = LESSONS.filter(l => l.fase === fase);
+  return mods.length > 0 && mods.every(l => s.done[l.id]);
+}
+function checklistDone(s, l) {
+  if (!l.checklist || !l.checklist.length) return false;
+  const arr = s.check[l.id] || [];
+  return l.checklist.every((_, i) => arr[i]);
+}
+function countFirstTry(s) {
+  let n = 0;
+  Object.values(s.quiz).forEach(qz => { Object.values(qz).forEach(v => { if (v === "p") n++; }); });
+  return n;
+}
+function countCorrect(s) {
+  let n = 0;
+  Object.values(s.quiz).forEach(qz => { Object.values(qz).forEach(v => { if (v === "p" || v === "ok") n++; }); });
+  return n;
+}
+function xp() {
+  let x = 0;
+  LESSONS.forEach(l => {
+    if (state.done[l.id]) x += GAME.modulo;
+    const qz = state.quiz[l.id] || {};
+    Object.values(qz).forEach(v => { if (v === "p") x += GAME.primeira; else if (v === "ok") x += GAME.retentativa; });
+    if (checklistDone(state, l)) x += GAME.checklist;
+  });
+  x += Object.keys(state.badges).length * GAME.medalha;
+  return x;
+}
+function level() {
+  const x = xp();
+  let cur = LEVELS[0], next = null;
+  for (const lv of LEVELS) { if (x >= lv.xp) cur = lv; else { next = lv; break; } }
+  return { cur, next, x };
+}
+function evalBadges() {
+  BADGES.forEach(b => {
+    if (!state.badges[b.id] && b.when(state)) state.badges[b.id] = hoje();
+  });
+}
+function hoje() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function touchStreak() {
+  const t = hoje();
+  const st = state.streak;
+  if (st.last === t) return;
+  const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+  const y = ontem.getFullYear() + "-" + String(ontem.getMonth() + 1).padStart(2, "0") + "-" + String(ontem.getDate()).padStart(2, "0");
+  st.days = st.last === y ? st.days + 1 : 1;
+  st.best = Math.max(st.best, st.days);
+  st.last = t;
+}
+function unlocked(l) {
+  if (state.free) return true;
+  const i = LESSONS.indexOf(l);
+  return i === 0 || !!state.done[LESSONS[i - 1].id];
+}
+function firstOpenLesson() {
+  return LESSONS.find(l => !state.done[l.id] && unlocked(l)) || LESSONS[LESSONS.length - 1];
+}
 
 /* ---------- roteador ---------- */
 function route() {
@@ -32,24 +140,29 @@ function route() {
   if ((m = h.match(/^#\/licao\/([\w-]+)/))) {
     const lesson = LESSONS.find(l => l.id === m[1]);
     if (!lesson) { location.hash = "#/curso"; return; }
+    if (!unlocked(lesson)) { location.hash = "#/licao/" + firstOpenLesson().id; return; }
     landing.hidden = true; app.hidden = false;
     state.last = lesson.id; save();
     renderSidebar(lesson.id);
     renderLesson(lesson);
+  } else if (h.startsWith("#/jornada")) {
+    landing.hidden = true; app.hidden = false;
+    renderSidebar("jornada");
+    renderJornada();
   } else if (h.startsWith("#/certificado")) {
     landing.hidden = true; app.hidden = false;
     renderSidebar("cert");
     renderCert();
   } else if (h.startsWith("#/curso")) {
-    location.hash = "#/licao/" + (state.last && LESSONS.some(l => l.id === state.last) ? state.last : LESSONS[0].id);
+    const last = LESSONS.find(l => l.id === state.last);
+    location.hash = "#/licao/" + (last && unlocked(last) ? last.id : firstOpenLesson().id);
     return;
   } else {
     app.hidden = true; landing.hidden = false;
     renderLandingState();
   }
-  updateBars();
+  updateHud();
   closeSidebar();
-  $("#main").scrollTop = 0;
   window.scrollTo(0, 0);
 }
 
@@ -87,6 +200,11 @@ function renderLandingState() {
 function renderSidebar(activeId) {
   const sb = $("#sb-nav");
   sb.innerHTML = "";
+  const jor = document.createElement("button");
+  jor.className = "sb-item sb-jornada" + (activeId === "jornada" ? " active" : "");
+  jor.innerHTML = '<span class="dot" style="border-color:var(--amber);color:var(--amber)">★</span><span class="t">Minha Jornada</span>';
+  jor.onclick = () => { location.hash = "#/jornada"; };
+  sb.appendChild(jor);
   PHASES.forEach(ph => {
     const mods = LESSONS.filter(l => l.fase === ph.id);
     if (!mods.length) return;
@@ -95,10 +213,12 @@ function renderSidebar(activeId) {
     h.textContent = ph.icon + " " + ph.label;
     sb.appendChild(h);
     mods.forEach(l => {
+      const open = unlocked(l);
       const b = document.createElement("button");
-      b.className = "sb-item" + (state.done[l.id] ? " done" : "") + (l.id === activeId ? " active" : "");
-      b.innerHTML = '<span class="dot" data-n="' + (l.num != null ? l.num : "★") + '"></span><span class="t">' + esc(l.title) + "</span>";
-      b.onclick = () => { location.hash = "#/licao/" + l.id; };
+      b.className = "sb-item" + (state.done[l.id] ? " done" : "") + (l.id === activeId ? " active" : "") + (open ? "" : " locked");
+      b.innerHTML = '<span class="dot" data-n="' + (open ? (l.num != null ? l.num : "★") : "🔒") + '"></span><span class="t">' + esc(l.title) + "</span>";
+      if (open) b.onclick = () => { location.hash = "#/licao/" + l.id; };
+      else { b.disabled = true; b.title = "Conclua o módulo anterior para desbloquear"; }
       sb.appendChild(b);
     });
   });
@@ -109,9 +229,22 @@ function renderSidebar(activeId) {
   sb.appendChild(certBtn);
 }
 
-function updateBars() {
+function updateHud() {
   document.querySelectorAll(".bar>i").forEach(i => { i.style.width = pct() + "%"; });
   document.querySelectorAll(".tb-pct").forEach(e => { e.textContent = pct() + "%"; });
+  const lv = level();
+  const chip = $("#lvl-chip");
+  if (chip) {
+    chip.innerHTML = '<span class="lv-ico">' + lv.cur.icon + '</span><span class="lv-name">' + esc(lv.cur.name) + '</span><span class="lv-xp">' + lv.x + " XP</span>";
+    chip.title = lv.next ? ("Próximo nível: " + lv.next.name + " (" + lv.next.xp + " XP)") : "Nível máximo!";
+  }
+  const fl = $("#streak-chip");
+  if (fl) {
+    const d = state.streak.last === hoje() ? state.streak.days : 0;
+    fl.textContent = "🔥 " + d;
+    fl.title = d ? (d + (d > 1 ? " dias seguidos" : " dia") + " de estudo · recorde: " + state.streak.best) : "Estude hoje para acender a chama · recorde: " + state.streak.best;
+    fl.classList.toggle("off", d === 0);
+  }
 }
 
 /* ---------- lição ---------- */
@@ -144,7 +277,7 @@ function renderLesson(l) {
 
   if (l.checklist && l.checklist.length) {
     const saved = state.check[l.id] || [];
-    h += '<h2><span class="ico">✅</span>Checklist prático</h2><ul class="check">' +
+    h += '<h2><span class="ico">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + " XP ao completar</span></h2><ul class=\"check\">" +
       l.checklist.map((c, i) =>
         '<li><label><input type="checkbox" data-ck="' + i + '"' + (saved[i] ? " checked" : "") + "><span>" + c + "</span></label></li>").join("") + "</ul>";
   }
@@ -167,11 +300,14 @@ function renderLesson(l) {
   h += '<div class="lesson-nav">';
   if (prev) h += '<button class="btn btn-ghost" style="color:var(--ptxt-dim);border-color:var(--paper-line)" data-go="' + prev.id + '">← Anterior</button>';
   h += '<span class="spacer"></span>';
-  if (isDone) h += '<span class="done-flag">✓ Módulo concluído</span>';
-  else h += '<button class="btn btn-primary" id="complete-btn">Concluir módulo ✓</button>';
-  if (next) h += '<button class="btn btn-paper" data-go="' + next.id + '">Próximo →</button>';
+  if (isDone) h += '<span class="done-flag">✓ Módulo concluído · +' + GAME.modulo + ' XP</span>';
+  else h += '<button class="btn btn-primary" id="complete-btn">Concluir módulo ✓ <small style="opacity:.7">+' + GAME.modulo + ' XP</small></button>';
+  if (next) {
+    if (isDone || state.free) h += '<button class="btn btn-paper" data-go="' + next.id + '">Próximo →</button>';
+    else h += '<button class="btn btn-paper" disabled title="Conclua este módulo para desbloquear o próximo">🔒 Próximo</button>';
+  }
   h += "</div>";
-  if (!isDone && l.quiz && l.quiz.length) h += '<p class="complete-hint" style="text-align:right;margin-top:10px">Responda o quiz antes de concluir — ou conclua direto, você decide.</p>';
+  if (!isDone && l.quiz && l.quiz.length) h += '<p class="complete-hint" style="text-align:right;margin-top:10px">Responda o quiz antes de concluir — questões certas de primeira valem mais XP.</p>';
 
   const main = $("#view");
   main.innerHTML = '<article class="lesson">' + h + "</article>";
@@ -179,15 +315,15 @@ function renderLesson(l) {
   main.querySelectorAll("[data-go]").forEach(b => { b.onclick = () => { location.hash = "#/licao/" + b.dataset.go; }; });
   const cbtn = $("#complete-btn", main);
   if (cbtn) cbtn.onclick = () => {
-    state.done[l.id] = true; save();
-    renderSidebar(l.id); updateBars();
+    state.done[l.id] = true; touchStreak(); save();
+    renderSidebar(l.id); updateHud();
     if (pct() === 100) { location.hash = "#/certificado"; return; }
     renderLesson(l);
   };
   main.querySelectorAll("[data-ck]").forEach(ck => {
     ck.onchange = () => {
       const arr = state.check[l.id] || (state.check[l.id] = []);
-      arr[+ck.dataset.ck] = ck.checked; save();
+      arr[+ck.dataset.ck] = ck.checked; touchStreak(); save(); updateHud();
     };
   });
   wireQuiz(l, main);
@@ -195,8 +331,7 @@ function renderLesson(l) {
 
 /* ---------- quiz ---------- */
 function quizHTML(l) {
-  const saved = state.quiz[l.id] || {};
-  let h = '<div class="quiz"><div class="quiz-head"><span style="font-size:1.4rem">🧪</span><div class="qh-t"><b>Quiz do módulo</b><span>Teste o que você aprendeu — feedback imediato</span></div><span class="qh-score" id="quiz-score"></span></div>';
+  let h = '<div class="quiz"><div class="quiz-head"><span style="font-size:1.4rem">🧪</span><div class="qh-t"><b>Quiz do módulo</b><span>Acerto de primeira: +' + GAME.primeira + " XP · após retentar: +" + GAME.retentativa + ' XP</span></div><span class="qh-score" id="quiz-score"></span></div>';
   l.quiz.forEach((q, qi) => {
     h += '<div class="qq" data-q="' + qi + '"><div class="qq-q">' + (qi + 1) + ". " + esc(q.q) + '</div><div class="opts">';
     q.opts.forEach((o, oi) => {
@@ -213,13 +348,14 @@ function wireQuiz(l, root) {
   const saved = state.quiz[l.id] || (state.quiz[l.id] = {});
   const scoreEl = $("#quiz-score", root);
   const updateScore = () => {
-    const ok = Object.values(saved).filter(v => v === true).length;
+    const ok = Object.values(saved).filter(v => v === "p" || v === "ok").length;
     scoreEl.textContent = ok + "/" + l.quiz.length;
   };
   root.querySelectorAll(".qq").forEach(qq => {
     const qi = +qq.dataset.q, q = l.quiz[qi];
     const fb = $(".fb", qq);
-    const lock = (chosen, correct) => {
+    const lock = (chosen, res) => {
+      const correct = res === "p" || res === "ok";
       qq.querySelectorAll(".opt").forEach(b => {
         b.disabled = true;
         const oi = +b.dataset.o;
@@ -227,27 +363,75 @@ function wireQuiz(l, root) {
         else if (oi === chosen && !correct) b.classList.add("sel-err");
       });
       fb.className = "fb on " + (correct ? "ok" : "err");
-      fb.innerHTML = (correct ? "<b>Correto!</b> " : "<b>Não é essa.</b> ") + q.fb +
+      fb.innerHTML = (res === "p" ? '<b>Correto de primeira! 🎯 +' + GAME.primeira + " XP</b> " :
+        res === "ok" ? '<b>Correto! +' + GAME.retentativa + " XP</b> " : "<b>Não é essa.</b> ") + q.fb +
         (correct ? "" : ' <button class="retry">Tentar novamente</button>');
       const r = $(".retry", fb);
       if (r) r.onclick = () => {
-        delete saved[qi]; save();
+        saved[qi] = "r"; save();
         qq.querySelectorAll(".opt").forEach(b => { b.disabled = false; b.classList.remove("sel-ok", "sel-err"); });
         fb.className = "fb"; fb.innerHTML = "";
         updateScore();
       };
     };
-    if (qi in saved) lock(saved[qi] === true ? q.a : -1, saved[qi] === true);
+    const cur = saved[qi];
+    if (cur === "p" || cur === "ok") lock(q.a, cur);
+    else if (cur === "x") lock(-1, "x");
     qq.querySelectorAll(".opt").forEach(b => {
       b.onclick = () => {
         const correct = +b.dataset.o === q.a;
-        saved[qi] = correct; save();
-        lock(+b.dataset.o, correct);
-        updateScore();
+        const wasRetry = saved[qi] === "r";
+        saved[qi] = correct ? (wasRetry ? "ok" : "p") : "x";
+        touchStreak(); save();
+        lock(+b.dataset.o, saved[qi]);
+        updateScore(); updateHud();
       };
     });
   });
   updateScore();
+}
+
+/* ---------- painel Minha Jornada ---------- */
+function renderJornada() {
+  const lv = level();
+  const base = lv.cur.xp, teto = lv.next ? lv.next.xp : lv.x || 1;
+  const frac = lv.next ? Math.min(100, Math.round((lv.x - base) / (teto - base) * 100)) : 100;
+  const d = state.streak.last === hoje() ? state.streak.days : 0;
+  const nBadges = Object.keys(state.badges).length;
+  const perfeitas = countFirstTry(state), certas = countCorrect(state);
+  const checks = LESSONS.filter(l => checklistDone(state, l)).length;
+
+  let h = '<div class="jornada"><div class="crumb">Gamificação</div><h1 style="font-size:2rem;font-weight:800;color:var(--ink);margin-top:10px">Minha Jornada</h1>';
+
+  h += '<div class="lv-card"><div class="lv-big">' + lv.cur.icon + '</div><div class="lv-info"><div class="lv-title">' + esc(lv.cur.name) + '</div>' +
+    '<div class="lv-sub">' + lv.x + " XP" + (lv.next ? " · faltam " + (lv.next.xp - lv.x) + " XP para <b>" + esc(lv.next.name) + " " + lv.next.icon + "</b>" : " · patente máxima alcançada!") + "</div>" +
+    '<div class="lv-bar"><i style="width:' + frac + '%"></i></div></div></div>';
+
+  h += '<div class="stats-grid">' +
+    '<div class="st"><b>' + doneCount() + "/" + LESSONS.length + "</b><span>módulos concluídos</span></div>" +
+    '<div class="st"><b>🔥 ' + d + "</b><span>dias seguidos (recorde " + state.streak.best + ")</span></div>" +
+    '<div class="st"><b>' + certas + "</b><span>questões certas</span></div>" +
+    '<div class="st"><b>' + (certas ? Math.round(perfeitas / certas * 100) : 0) + "%</b><span>de acerto de primeira</span></div>" +
+    '<div class="st"><b>' + checks + "</b><span>checklists completos</span></div>" +
+    '<div class="st"><b>' + nBadges + "/" + BADGES.length + "</b><span>medalhas</span></div></div>";
+
+  h += '<h2 style="font-size:1.3rem;font-weight:800;color:var(--ink);margin:40px 0 8px">🏅 Medalhas</h2><p style="color:var(--ptxt-dim);margin-bottom:16px">Cada medalha vale +' + GAME.medalha + ' XP.</p><div class="badges">';
+  BADGES.forEach(b => {
+    const won = state.badges[b.id];
+    h += '<div class="badge' + (won ? " won" : "") + '"><span class="bd-ico">' + b.icon + '</span><b>' + esc(b.name) + "</b><span class=\"bd-desc\">" + esc(b.desc) + "</span>" +
+      (won ? '<span class="bd-date">conquistada em ' + won.split("-").reverse().join("/") + "</span>" : '<span class="bd-date">🔒 bloqueada</span>') + "</div>";
+  });
+  h += "</div>";
+
+  h += '<div class="free-box"><label><input type="checkbox" id="free-toggle"' + (state.free ? " checked" : "") + "> <b>Destravar todos os módulos</b> — desative o desbloqueio sequencial e navegue livremente.</label></div>";
+  h += '<p style="margin-top:26px"><button class="btn btn-paper" id="jr-back">Continuar o curso →</button></p></div>';
+
+  $("#view").innerHTML = h;
+  $("#jr-back").onclick = () => { location.hash = "#/curso"; };
+  $("#free-toggle").onchange = e => {
+    state.free = e.target.checked; save();
+    renderSidebar("jornada");
+  };
 }
 
 /* ---------- certificado ---------- */
@@ -275,7 +459,9 @@ function renderCert() {
     '<div><b>Aldemar Araujo Castro</b>autor e instrutor</div></div><div class="c-seal">Fiat ✦ Lux</div></div></div>';
   $("#view").innerHTML = h;
   const apply = () => {
-    state.name = $("#cert-name").value.trim(); save();
+    state.name = $("#cert-name").value.trim();
+    if (state.name) state.certGen = true;
+    save(); updateHud();
     $("#c-name").textContent = state.name || "________________";
   };
   $("#cert-apply").onclick = apply;
@@ -302,8 +488,11 @@ function toggleSidebar() {
 window.addEventListener("hashchange", route);
 document.addEventListener("DOMContentLoaded", () => {
   $("#menu-btn").onclick = toggleSidebar;
+  const chip = $("#lvl-chip");
+  if (chip) chip.onclick = () => { location.hash = "#/jornada"; };
   document.querySelectorAll("[data-start]").forEach(b => {
     b.onclick = () => { location.hash = "#/curso"; };
   });
+  save();
   route();
 });
