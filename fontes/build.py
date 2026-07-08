@@ -1,8 +1,11 @@
 """Monta o curso/index.html final a partir das partes em site/ e lessons/."""
+import datetime
 import json
 import re
 import sys
 from pathlib import Path
+
+VERSION = "1.3.0"
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
@@ -17,6 +20,8 @@ def main() -> None:
     css = (SITE / "style.css").read_text(encoding="utf-8")
     js = (SITE / "app.js").read_text(encoding="utf-8")
     shell = (SITE / "shell.html").read_text(encoding="utf-8")
+    hoje = datetime.date.today().strftime("%d/%m/%Y")
+    shell = shell.replace("{{VERSAO}}", f"v{VERSION} · {hoje}")
     fl = json.loads((ROOT / "fl.json").read_text(encoding="utf-8"))
 
     lesson_files = sorted(LESSONS.glob("*.js"), key=lambda p: p.name)
