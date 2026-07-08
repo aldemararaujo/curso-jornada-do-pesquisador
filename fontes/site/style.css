@@ -121,7 +121,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .final-cta h2{font-size:clamp(1.6rem,3.8vw,2.5rem);font-weight:800;letter-spacing:-.02em;max-width:24ch;margin:0 auto}
 .final-cta p{color:var(--txt-dim);max-width:52ch;margin:16px auto 0}
 .final-cta .btn{margin-top:34px}
-.l-foot{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--txt-dim);font-size:.85rem}
+.l-foot{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--txt-dim);font-size:.85rem;line-height:1.9}
 .l-foot a{color:var(--txt-dim)}
 
 /* ================= APP (área do curso) ================= */

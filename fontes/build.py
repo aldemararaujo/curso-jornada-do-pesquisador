@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
@@ -21,7 +21,7 @@ def main() -> None:
     js = (SITE / "app.js").read_text(encoding="utf-8")
     shell = (SITE / "shell.html").read_text(encoding="utf-8")
     hoje = datetime.date.today().strftime("%d/%m/%Y")
-    shell = shell.replace("{{VERSAO}}", f"v{VERSION} · {hoje}")
+    shell = shell.replace("{{VERSAO_NUM}}", VERSION).replace("{{DATA}}", hoje)
     fl = json.loads((ROOT / "fl.json").read_text(encoding="utf-8"))
 
     lesson_files = sorted(LESSONS.glob("*.js"), key=lambda p: p.name)
