@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-VERSION = "1.3.4"
+VERSION = "1.3.5"
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"

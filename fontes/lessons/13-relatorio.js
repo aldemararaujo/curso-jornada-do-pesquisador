@@ -41,7 +41,7 @@ LESSONS.push({
     "TCLE/TALE e documento de aprovação do CEP nos anexos",
     "Cópia do relatório enviada ao CEP para encerramento ético"
   ],
-  dica: "<p>Use o ChatGPT para revisar parágrafos da discussão: cole o trecho e peça <em>“Revise este parágrafo para clareza e rigor científico, mantendo meu argumento”</em>. Você mantém a autoria; a IA ajuda na forma.</p><p>As normas detalhadas para elaboração do relatório estão em <a href='https://metodologia.org/ecmal/livro/pdf/normas_2p.pdf' target='_blank' rel='noopener'>metodologia.org</a>.</p><p>Lembre: a conclusão deve ter <strong>uma única frase principal</strong> que responde diretamente à pergunta de pesquisa. Todo o resto é contexto e projeção.</p>",
+  dica: "<p>Use o ChatGPT para revisar parágrafos da discussão: cole o trecho e peça <em>“Revise este parágrafo para clareza e rigor científico, mantendo meu argumento”</em>. Você mantém a autoria; a IA ajuda na forma.</p><p>Lembre: a conclusão deve ter <strong>uma única frase principal</strong> que responde diretamente à pergunta de pesquisa. Todo o resto é contexto e projeção.</p>",
   cta: "<p>Ana Vitória entregou o relatório encadernado para o orientador. Ele leu, fez alguns ajustes e disse: <strong>“Está pronto para a banca.”</strong> Ela sentiu o coração apertar — de orgulho e de nervosismo. Toda aquela jornada estava ali, em papel, com seu nome na capa. Mas ainda havia um desafio pela frente: defender o trabalho diante dos examinadores. No próximo módulo, você vai aprender a transformar o relatório em uma apresentação memorável.</p>",
   fl: 16, flLabel: "Capítulo 16 — Redigir o Relatório Final",
   quiz: [
