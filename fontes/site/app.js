@@ -75,6 +75,30 @@ function save() {
 const $ = (sel, el) => (el || document).querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+/* ---------- copiar para a área de transferência ---------- */
+function copyText(txt, btn) {
+  const feito = () => {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = "✓ Copiado!";
+    btn.classList.add("copied");
+    btn.disabled = true;
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove("copied"); btn.disabled = false; }, 2000);
+  };
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); feito(); } catch {}
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(feito).catch(fallback);
+  } else fallback();
+}
+
 /* ---------- toasts (feedback imediato) ---------- */
 function toast(msg, icon) {
   const box = $("#toasts");
@@ -350,7 +374,7 @@ function renderLesson(l) {
 
   if (l.checklist && l.checklist.length) {
     const saved = state.check[l.id] || [];
-    h += '<h2><span class="ico" aria-hidden="true">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + " XP ao completar</span></h2><ul class=\"check\">" +
+    h += '<h2><span class="ico" aria-hidden="true">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + ' XP ao completar</span><button class="copy-btn" id="ck-copy" title="Copiar o checklist como texto">📋 Copiar</button></h2><ul class="check">' +
       l.checklist.map((c, i) =>
         '<li><label><input type="checkbox" data-ck="' + i + '"' + (saved[i] ? " checked" : "") + "><span>" + c + "</span></label></li>").join("") + "</ul>";
   }
@@ -424,6 +448,24 @@ function renderLesson(l) {
       refreshReqs();
     };
   });
+
+  const ckCopy = $("#ck-copy", main);
+  if (ckCopy) ckCopy.onclick = () => {
+    const tmp = document.createElement("div");
+    const linhas = (l.checklist || []).map(c => { tmp.innerHTML = c; return "☐ " + tmp.textContent.trim(); });
+    copyText("Checklist — " + l.title + "\n" + linhas.join("\n"), ckCopy);
+  };
+  main.querySelectorAll(".pbox").forEach(p => {
+    const t = $(".pbox-t", p);
+    if (!t) return;
+    const b = document.createElement("button");
+    b.className = "copy-btn pbox-copy";
+    b.title = "Copiar este texto";
+    b.innerHTML = "📋 Copiar";
+    b.onclick = () => copyText(t.textContent.trim(), b);
+    p.appendChild(b);
+  });
+
   wireQuiz(l, main, refreshReqs);
 }
 

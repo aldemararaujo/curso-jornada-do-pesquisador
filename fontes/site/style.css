@@ -260,6 +260,27 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
 .qq .fb.err{background:#fdf0f0;color:#8c3232}
 .qq .retry{margin-top:10px;font-size:.85rem;font-weight:700;color:var(--info)}
 
+/* copiar (checklist e prompts) */
+.copy-btn{flex:none;font-size:.78rem;font-weight:700;padding:.35em .9em;border-radius:999px;
+  border:1.5px solid var(--paper-line);background:#fff;color:var(--ptxt-dim);
+  transition:border-color .12s,color .12s;white-space:nowrap}
+.copy-btn:hover{border-color:var(--amber);color:var(--amber-ink)}
+.copy-btn.copied{border-color:var(--ok);color:var(--ok);opacity:1}
+.copy-btn:disabled{cursor:default}
+.lesson h2 .copy-btn{margin-left:10px}
+
+/* caixa de prompt copiável */
+.pbox{position:relative;margin:20px 0;padding:20px 24px;padding-right:120px;background:var(--paper-2);
+  border:1.5px dashed #d8cdb4;border-radius:var(--r)}
+.pbox .pbox-tag{display:inline-flex;align-items:center;gap:.5em;font-size:.72rem;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--amber-ink);margin-bottom:6px}
+.pbox .pbox-t{margin:0;color:var(--ink);font-style:italic}
+.pbox .pbox-copy{position:absolute;top:16px;right:16px}
+@media (max-width:640px){
+  .pbox{padding-right:24px;padding-bottom:56px}
+  .pbox .pbox-copy{top:auto;bottom:14px;right:14px}
+}
+
 /* requisitos para concluir o módulo */
 .reqs{margin:44px 0 0;background:#fff;border:1.5px solid #ecd08f;border-left:5px solid var(--amber);
   border-radius:var(--r);padding:18px 22px}

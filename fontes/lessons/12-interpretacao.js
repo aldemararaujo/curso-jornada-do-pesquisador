@@ -37,7 +37,7 @@ LESSONS.push({
     "Interpretação discutida com o orientador ou colegas antes de finalizar",
     "Nenhuma análise a posteriori apresentada como resultado planejado"
   ],
-  dica: "<p>Ao redigir a conclusão, comece sempre pela pergunta de pesquisa: <em>“Nosso estudo investigou X. Os resultados indicam que…”</em> — esse formato garante clareza e foco.</p><p>Use o Consensus ou o Perplexity para buscar estudos similares e situar sua pesquisa no contexto do campo.</p><p>Lembre: <strong>um resultado negativo (sem diferença significativa) é igualmente válido cientificamente</strong>. Saber o que não funciona também é conhecimento.</p>",
+  dica: "<p>Ao redigir a conclusão, comece sempre pela pergunta de pesquisa — esse formato garante clareza e foco:</p><div class='pbox'><span class='pbox-tag'>💬 Modelo — copie e complete</span><p class='pbox-t'>Nosso estudo investigou X. Os resultados indicam que…</p></div><p>Use o Consensus ou o Perplexity para buscar estudos similares e situar sua pesquisa no contexto do campo.</p><p>Lembre: <strong>um resultado negativo (sem diferença significativa) é igualmente válido cientificamente</strong>. Saber o que não funciona também é conhecimento.</p>",
   cta: "<p>Ana Vitória tinha agora uma conclusão sólida, honesta e bem fundamentada. Ela sabia exatamente o que seus dados mostravam — e o que eles não podiam afirmar. Mas interpretar era apenas o penúltimo passo da fase de execução. O próximo desafio: transformar tudo isso em um documento organizado, claro e científico. <strong>A hora de escrever o relatório final chegou.</strong></p>",
   fl: 15, flLabel: "Capítulo 15 — Interpretar os Dados",
   quiz: [

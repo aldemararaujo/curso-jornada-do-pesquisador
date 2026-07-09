@@ -269,6 +269,27 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
 .qq .fb.err{background:#fdf0f0;color:#8c3232}
 .qq .retry{margin-top:10px;font-size:.85rem;font-weight:700;color:var(--info)}
 
+/* copiar (checklist e prompts) */
+.copy-btn{flex:none;font-size:.78rem;font-weight:700;padding:.35em .9em;border-radius:999px;
+  border:1.5px solid var(--paper-line);background:#fff;color:var(--ptxt-dim);
+  transition:border-color .12s,color .12s;white-space:nowrap}
+.copy-btn:hover{border-color:var(--amber);color:var(--amber-ink)}
+.copy-btn.copied{border-color:var(--ok);color:var(--ok);opacity:1}
+.copy-btn:disabled{cursor:default}
+.lesson h2 .copy-btn{margin-left:10px}
+
+/* caixa de prompt copiável */
+.pbox{position:relative;margin:20px 0;padding:20px 24px;padding-right:120px;background:var(--paper-2);
+  border:1.5px dashed #d8cdb4;border-radius:var(--r)}
+.pbox .pbox-tag{display:inline-flex;align-items:center;gap:.5em;font-size:.72rem;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--amber-ink);margin-bottom:6px}
+.pbox .pbox-t{margin:0;color:var(--ink);font-style:italic}
+.pbox .pbox-copy{position:absolute;top:16px;right:16px}
+@media (max-width:640px){
+  .pbox{padding-right:24px;padding-bottom:56px}
+  .pbox .pbox-copy{top:auto;bottom:14px;right:14px}
+}
+
 /* requisitos para concluir o módulo */
 .reqs{margin:44px 0 0;background:#fff;border:1.5px solid #ecd08f;border-left:5px solid var(--amber);
   border-radius:var(--r);padding:18px 22px}
@@ -526,7 +547,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
       <div>2025–2026 @ Aldemar Araujo Castro</div>
       <div>✉️ Comentários, sugestões e críticas:
         <a href="https://forms.gle/WAoXfEFnrjJa971n9" target="_blank" rel="noopener">https://forms.gle/WAoXfEFnrjJa971n9</a></div>
-      <div>Versão 1.5.0 · 09/07/2026</div>
+      <div>Versão 1.6.0 · 09/07/2026</div>
     </div>
   </footer>
 </div>
@@ -631,7 +652,7 @@ LESSONS.push({
   why: "<p>Você já teve uma ideia de pesquisa, mas travou na hora de transformá-la em uma pergunta clara e objetiva? Este módulo é para você. Aqui, você vai aprender como estruturar perguntas científicas relevantes usando a <strong>estratégia PICO</strong> e uma ferramenta com inteligência artificial, um ChatGPT personalizado. Com passos práticos, exemplos médicos e dicas para evitar erros comuns, mostramos como <strong>uma boa pergunta é o alicerce de toda pesquisa de qualidade</strong>.</p>",
   cenario: "<p>Ana Vitória, estudante de segundo ano de Medicina, ingressou em um grupo de pesquisa sobre doenças cardiovasculares. Ao iniciar sua participação, foi questionada: <strong>“Qual será a sua pergunta de pesquisa?”</strong>. Em silêncio, percebeu que não sabia por onde começar. Tinha interesse no tema, acesso à literatura e apoio do orientador, mas faltava a centelha inicial: uma pergunta bem formulada. Essa situação é comum — a formulação da pergunta é o ponto de partida da jornada científica e, muitas vezes, o maior desafio para quem está começando.</p>",
   sections: [
-    { icon: "🔍", title: "O que é a pergunta de pesquisa?", html: "<p>A pergunta de pesquisa é uma formulação <strong>clara, objetiva e delimitada</strong> de um problema científico que se deseja investigar. Ela deve ser respondível por meio de métodos científicos, orientando o tipo de estudo, a coleta de dados e a análise estatística.</p><p>Na área da saúde, perguntas bem estruturadas ajudam a responder questões como: <em>“Qual é o impacto da telemedicina no controle da hipertensão arterial em idosos?”</em> ou <em>“A vitamina D reduz a incidência de infecções respiratórias em crianças?”</em>.</p><p>Um dos métodos mais usados para formulá-las é a <strong>estratégia PICO</strong>:</p><ul><li><strong>P</strong> — Paciente ou problema</li><li><strong>I</strong> — Intervenção</li><li><strong>C</strong> — Comparativo</li><li><strong>O</strong> — Outcome / Desfecho / Efeito</li></ul><p>Exemplo: <em>“Qual a diferença de frequência de AVC isquêmico (O) em pacientes com fibrilação atrial (P) tratados com anticoagulantes diretos (I) comparado com varfarina (C)?”</em></p><p>Use um <a href='https://bit.ly/ib-virtual' target='_blank' rel='noopener'>ChatGPT personalizado</a> para transformar um tema amplo em uma pergunta estruturada usando PICO — e colocar tudo isso em prática em alguns segundos.</p>" },
+    { icon: "🔍", title: "O que é a pergunta de pesquisa?", html: "<p>A pergunta de pesquisa é uma formulação <strong>clara, objetiva e delimitada</strong> de um problema científico que se deseja investigar. Ela deve ser respondível por meio de métodos científicos, orientando o tipo de estudo, a coleta de dados e a análise estatística.</p><p>Na área da saúde, perguntas bem estruturadas ajudam a responder questões como: <em>“Qual é o impacto da telemedicina no controle da hipertensão arterial em idosos?”</em> ou <em>“A vitamina D reduz a incidência de infecções respiratórias em crianças?”</em>.</p><p>Um dos métodos mais usados para formulá-las é a <strong>estratégia PICO</strong>:</p><ul><li><strong>P</strong> — Paciente ou problema</li><li><strong>I</strong> — Intervenção</li><li><strong>C</strong> — Comparativo</li><li><strong>O</strong> — Outcome / Desfecho / Efeito</li></ul><div class='pbox'><span class='pbox-tag'>💬 Exemplo de pergunta PICO — copie e adapte</span><p class='pbox-t'>Qual a diferença de frequência de AVC isquêmico (O) em pacientes com fibrilação atrial (P) tratados com anticoagulantes diretos (I) comparado com varfarina (C)?</p></div><p>Use um <a href='https://bit.ly/ib-virtual' target='_blank' rel='noopener'>ChatGPT personalizado</a> para transformar um tema amplo em uma pergunta estruturada usando PICO — e colocar tudo isso em prática em alguns segundos.</p>" },
     { icon: "⭐", title: "Por que isso é importante?", html: "<p>Uma boa pergunta de pesquisa <strong>evita desperdício de tempo, recursos e energia</strong>. Perguntas vagas levam a estudos confusos e conclusões frágeis. Em contrapartida, uma pergunta bem definida:</p><ul><li>Facilita a busca bibliográfica;</li><li>Orienta o desenho metodológico;</li><li>Garante relevância clínica e científica.</li></ul><p>A inteligência artificial pode ajudar a testar diferentes formulações, revisar a coerência lógica e sugerir ajustes com base em resultados de pesquisas recentes.</p>" }
   ],
   steps: [
@@ -1132,7 +1153,7 @@ LESSONS.push({
     "Interpretação discutida com o orientador ou colegas antes de finalizar",
     "Nenhuma análise a posteriori apresentada como resultado planejado"
   ],
-  dica: "<p>Ao redigir a conclusão, comece sempre pela pergunta de pesquisa: <em>“Nosso estudo investigou X. Os resultados indicam que…”</em> — esse formato garante clareza e foco.</p><p>Use o Consensus ou o Perplexity para buscar estudos similares e situar sua pesquisa no contexto do campo.</p><p>Lembre: <strong>um resultado negativo (sem diferença significativa) é igualmente válido cientificamente</strong>. Saber o que não funciona também é conhecimento.</p>",
+  dica: "<p>Ao redigir a conclusão, comece sempre pela pergunta de pesquisa — esse formato garante clareza e foco:</p><div class='pbox'><span class='pbox-tag'>💬 Modelo — copie e complete</span><p class='pbox-t'>Nosso estudo investigou X. Os resultados indicam que…</p></div><p>Use o Consensus ou o Perplexity para buscar estudos similares e situar sua pesquisa no contexto do campo.</p><p>Lembre: <strong>um resultado negativo (sem diferença significativa) é igualmente válido cientificamente</strong>. Saber o que não funciona também é conhecimento.</p>",
   cta: "<p>Ana Vitória tinha agora uma conclusão sólida, honesta e bem fundamentada. Ela sabia exatamente o que seus dados mostravam — e o que eles não podiam afirmar. Mas interpretar era apenas o penúltimo passo da fase de execução. O próximo desafio: transformar tudo isso em um documento organizado, claro e científico. <strong>A hora de escrever o relatório final chegou.</strong></p>",
   fl: 15, flLabel: "Capítulo 15 — Interpretar os Dados",
   quiz: [
@@ -1186,7 +1207,7 @@ LESSONS.push({
     "TCLE/TALE e documento de aprovação do CEP nos anexos",
     "Cópia do relatório enviada ao CEP para encerramento ético"
   ],
-  dica: "<p>Use o ChatGPT para revisar parágrafos da discussão: cole o trecho e peça <em>“Revise este parágrafo para clareza e rigor científico, mantendo meu argumento”</em>. Você mantém a autoria; a IA ajuda na forma.</p><p>Lembre: a conclusão deve ter <strong>uma única frase principal</strong> que responde diretamente à pergunta de pesquisa. Todo o resto é contexto e projeção.</p>",
+  dica: "<p>Use o ChatGPT para revisar parágrafos da discussão: cole o trecho e peça:</p><div class='pbox'><span class='pbox-tag'>💬 Prompt para IA — copie e use</span><p class='pbox-t'>Revise este parágrafo para clareza e rigor científico, mantendo meu argumento.</p></div><p>Você mantém a autoria; a IA ajuda na forma.</p><p>Lembre: a conclusão deve ter <strong>uma única frase principal</strong> que responde diretamente à pergunta de pesquisa. Todo o resto é contexto e projeção.</p>",
   cta: "<p>Ana Vitória entregou o relatório encadernado para o orientador. Ele leu, fez alguns ajustes e disse: <strong>“Está pronto para a banca.”</strong> Ela sentiu o coração apertar — de orgulho e de nervosismo. Toda aquela jornada estava ali, em papel, com seu nome na capa. Mas ainda havia um desafio pela frente: defender o trabalho diante dos examinadores. No próximo módulo, você vai aprender a transformar o relatório em uma apresentação memorável.</p>",
   fl: 16, flLabel: "Capítulo 16 — Redigir o Relatório Final",
   quiz: [
@@ -1501,6 +1522,30 @@ function save() {
 const $ = (sel, el) => (el || document).querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+/* ---------- copiar para a área de transferência ---------- */
+function copyText(txt, btn) {
+  const feito = () => {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = "✓ Copiado!";
+    btn.classList.add("copied");
+    btn.disabled = true;
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove("copied"); btn.disabled = false; }, 2000);
+  };
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); feito(); } catch {}
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(feito).catch(fallback);
+  } else fallback();
+}
+
 /* ---------- toasts (feedback imediato) ---------- */
 function toast(msg, icon) {
   const box = $("#toasts");
@@ -1776,7 +1821,7 @@ function renderLesson(l) {
 
   if (l.checklist && l.checklist.length) {
     const saved = state.check[l.id] || [];
-    h += '<h2><span class="ico" aria-hidden="true">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + " XP ao completar</span></h2><ul class=\"check\">" +
+    h += '<h2><span class="ico" aria-hidden="true">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + ' XP ao completar</span><button class="copy-btn" id="ck-copy" title="Copiar o checklist como texto">📋 Copiar</button></h2><ul class="check">' +
       l.checklist.map((c, i) =>
         '<li><label><input type="checkbox" data-ck="' + i + '"' + (saved[i] ? " checked" : "") + "><span>" + c + "</span></label></li>").join("") + "</ul>";
   }
@@ -1850,6 +1895,24 @@ function renderLesson(l) {
       refreshReqs();
     };
   });
+
+  const ckCopy = $("#ck-copy", main);
+  if (ckCopy) ckCopy.onclick = () => {
+    const tmp = document.createElement("div");
+    const linhas = (l.checklist || []).map(c => { tmp.innerHTML = c; return "☐ " + tmp.textContent.trim(); });
+    copyText("Checklist — " + l.title + "\n" + linhas.join("\n"), ckCopy);
+  };
+  main.querySelectorAll(".pbox").forEach(p => {
+    const t = $(".pbox-t", p);
+    if (!t) return;
+    const b = document.createElement("button");
+    b.className = "copy-btn pbox-copy";
+    b.title = "Copiar este texto";
+    b.innerHTML = "📋 Copiar";
+    b.onclick = () => copyText(t.textContent.trim(), b);
+    p.appendChild(b);
+  });
+
   wireQuiz(l, main, refreshReqs);
 }
 
