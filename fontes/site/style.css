@@ -132,6 +132,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
 .final-cta .btn{margin-top:34px}
 .l-foot{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--txt-dim);font-size:.85rem;line-height:1.9}
 .l-foot a{color:var(--txt-dim)}
+.main .l-foot{border-top:1px solid var(--paper-line);color:var(--ptxt-dim)}
+.main .l-foot a{color:var(--amber-ink)}
 
 /* ================= APP (área do curso) ================= */
 .app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
@@ -379,7 +381,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
 
 @media print{
   body{background:#fff}
-  .topbar,.sidebar,.cert-form,.cert-actions,.lesson-nav{display:none!important}
+  .topbar,.sidebar,.cert-form,.cert-actions,.lesson-nav,.l-foot{display:none!important}
   .app{display:block}
   .main{background:#fff}
   .cert-page{padding:0;max-width:none}
