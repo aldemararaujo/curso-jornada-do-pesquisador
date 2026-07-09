@@ -120,14 +120,16 @@
 
 <!-- ================= APP ================= -->
 <div id="app" class="app" hidden>
+  <a class="skip" href="#main" id="skip-link">Pular para o conteúdo</a>
   <div class="topbar">
     <button class="menu-btn" id="menu-btn" aria-label="Abrir menu de módulos">☰</button>
-    <span class="brand">🧭 <span class="b-full">A Jornada do </span><em>Pesquisador</em></span>
-    <div class="tb-progress"><div class="bar"><i></i></div><span class="tb-pct">0%</span></div>
+    <span class="brand"><span aria-hidden="true">🧭 </span><span class="b-full">A Jornada do </span><em>Pesquisador</em></span>
+    <div class="tb-progress"><div class="bar" role="progressbar" aria-label="Progresso do curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><span class="tb-pct">0%</span></div>
     <button class="lvl-chip" id="lvl-chip" aria-label="Abrir Minha Jornada"></button>
     <span class="streak-chip" id="streak-chip"></span>
     <a class="tb-exit" href="#/">← página inicial</a>
   </div>
   <nav class="sidebar" id="sidebar" aria-label="Módulos do curso"><div id="sb-nav"></div></nav>
-  <main class="main" id="main"><div id="view"></div></main>
+  <main class="main" id="main" tabindex="-1"><div id="view"></div></main>
 </div>
+<div id="toasts" aria-live="polite"></div>

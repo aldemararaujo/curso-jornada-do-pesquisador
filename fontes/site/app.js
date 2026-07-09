@@ -59,10 +59,33 @@ function load() {
   });
   return s;
 }
-function save() { evalBadges(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+function save() {
+  const fresh = evalBadges();
+  fresh.forEach(b => toast("Medalha conquistada: <b>" + esc(b.name) + "</b> · +" + GAME.medalha + " XP", b.icon));
+  const cur = level().cur;
+  if (state.lvSeen == null) state.lvSeen = cur.name;
+  else if (state.lvSeen !== cur.name) {
+    const subiu = LEVELS.findIndex(l => l.name === cur.name) > LEVELS.findIndex(l => l.name === state.lvSeen);
+    state.lvSeen = cur.name;
+    if (subiu) toast("Nova patente: <b>" + esc(cur.name) + "</b>", cur.icon);
+  }
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+}
 
 const $ = (sel, el) => (el || document).querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------- toasts (feedback imediato) ---------- */
+function toast(msg, icon) {
+  const box = $("#toasts");
+  if (!box) return;
+  while (box.children.length >= 3) box.firstChild.remove();
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = '<span class="t-ico" aria-hidden="true">' + (icon || "✨") + "</span><span>" + msg + "</span>";
+  box.appendChild(t);
+  setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 350); }, 4500);
+}
 
 const doneCount = () => LESSONS.filter(l => state.done[l.id]).length;
 const pct = () => Math.round(doneCount() / LESSONS.length * 100);
@@ -105,9 +128,11 @@ function level() {
   return { cur, next, x };
 }
 function evalBadges() {
+  const fresh = [];
   BADGES.forEach(b => {
-    if (!state.badges[b.id] && b.when(state)) state.badges[b.id] = hoje();
+    if (!state.badges[b.id] && b.when(state)) { state.badges[b.id] = hoje(); fresh.push(b); }
   });
+  return fresh;
 }
 function hoje() {
   const d = new Date();
@@ -122,6 +147,7 @@ function touchStreak() {
   st.days = st.last === y ? st.days + 1 : 1;
   st.best = Math.max(st.best, st.days);
   st.last = t;
+  if (st.days >= 2) toast(st.days + " dias seguidos de estudo — continue assim!", "🔥");
 }
 function unlocked(l) {
   if (state.free) return true;
@@ -130,6 +156,11 @@ function unlocked(l) {
 }
 function firstOpenLesson() {
   return LESSONS.find(l => !state.done[l.id] && unlocked(l)) || LESSONS[LESSONS.length - 1];
+}
+function lockedToast(l) {
+  const i = LESSONS.indexOf(l);
+  const antes = i > 0 ? LESSONS[i - 1].title : "";
+  toast("Módulo bloqueado — conclua <b>" + esc(antes) + "</b> primeiro. Em <b>Minha Jornada</b> você pode destravar todos.", "🔒");
 }
 
 /* ---------- roteador ---------- */
@@ -140,7 +171,7 @@ function route() {
   if ((m = h.match(/^#\/licao\/([\w-]+)/))) {
     const lesson = LESSONS.find(l => l.id === m[1]);
     if (!lesson) { location.hash = "#/curso"; return; }
-    if (!unlocked(lesson)) { location.hash = "#/licao/" + firstOpenLesson().id; return; }
+    if (!unlocked(lesson)) { lockedToast(lesson); location.hash = "#/licao/" + firstOpenLesson().id; return; }
     landing.hidden = true; app.hidden = false;
     state.last = lesson.id; save();
     renderSidebar(lesson.id);
@@ -202,7 +233,7 @@ function renderSidebar(activeId) {
   sb.innerHTML = "";
   const jor = document.createElement("button");
   jor.className = "sb-item sb-jornada" + (activeId === "jornada" ? " active" : "");
-  jor.innerHTML = '<span class="dot" style="border-color:var(--amber);color:var(--amber)">★</span><span class="t">Minha Jornada</span>';
+  jor.innerHTML = '<span class="dot" aria-hidden="true" style="border-color:var(--amber);color:var(--amber)">★</span><span class="t">Minha Jornada</span>';
   jor.onclick = () => { location.hash = "#/jornada"; };
   sb.appendChild(jor);
   PHASES.forEach(ph => {
@@ -216,9 +247,13 @@ function renderSidebar(activeId) {
       const open = unlocked(l);
       const b = document.createElement("button");
       b.className = "sb-item" + (state.done[l.id] ? " done" : "") + (l.id === activeId ? " active" : "") + (open ? "" : " locked");
-      b.innerHTML = '<span class="dot" data-n="' + (open ? (l.num != null ? l.num : "★") : "🔒") + '"></span><span class="t">' + esc(l.title) + "</span>";
+      b.innerHTML = '<span class="dot" aria-hidden="true" data-n="' + (open ? (l.num != null ? l.num : "★") : "🔒") + '"></span><span class="t">' + esc(l.title) + "</span>";
       if (open) b.onclick = () => { location.hash = "#/licao/" + l.id; };
-      else { b.disabled = true; b.title = "Conclua o módulo anterior para desbloquear"; }
+      else {
+        b.setAttribute("aria-disabled", "true");
+        b.title = "Conclua o módulo anterior para desbloquear";
+        b.onclick = () => { lockedToast(l); };
+      }
       sb.appendChild(b);
     });
   });
@@ -231,6 +266,7 @@ function renderSidebar(activeId) {
 
 function updateHud() {
   document.querySelectorAll(".bar>i").forEach(i => { i.style.width = pct() + "%"; });
+  document.querySelectorAll(".bar[role=progressbar]").forEach(b => { b.setAttribute("aria-valuenow", pct()); });
   document.querySelectorAll(".tb-pct").forEach(e => { e.textContent = pct() + "%"; });
   const lv = level();
   const chip = $("#lvl-chip");
@@ -262,39 +298,39 @@ function renderLesson(l) {
   if (l.cenario) h += '<div class="box box-cenario"><span class="box-tag">📖 Cenário</span>' + l.cenario + "</div>";
 
   (l.sections || []).forEach(s => {
-    h += '<h2><span class="ico">' + (s.icon || "📌") + "</span>" + esc(s.title) + "</h2>" + s.html;
+    h += '<h2><span class="ico" aria-hidden="true">' + (s.icon || "📌") + "</span>" + esc(s.title) + "</h2>" + s.html;
   });
 
   if (l.steps && l.steps.length) {
-    h += '<h2><span class="ico">🛠️</span>Como fazer: passo a passo</h2><ol class="steps">' +
+    h += '<h2><span class="ico" aria-hidden="true">🛠️</span>Como fazer: passo a passo</h2><ol class="steps">' +
       l.steps.map((s, i) => '<li data-n="' + (i + 1) + '"><div>' + s + "</div></li>").join("") + "</ol>";
   }
   if (l.errors && l.errors.length) {
-    h += '<h2><span class="ico">⚠️</span>Erros comuns (e como evitá-los)</h2><div class="errs">' +
+    h += '<h2><span class="ico" aria-hidden="true">⚠️</span>Erros comuns (e como evitá-los)</h2><div class="errs">' +
       l.errors.map(e => '<div class="err"><div class="e">' + e.e + '</div><div class="s">' + e.s + "</div></div>").join("") + "</div>";
   }
   if (l.licao) h += '<div class="box box-licao"><span class="box-tag">💡 Lição para a jornada</span>' + l.licao + "</div>";
 
   if (l.checklist && l.checklist.length) {
     const saved = state.check[l.id] || [];
-    h += '<h2><span class="ico">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + " XP ao completar</span></h2><ul class=\"check\">" +
+    h += '<h2><span class="ico" aria-hidden="true">✅</span>Checklist prático <span class="xp-hint">+' + GAME.checklist + " XP ao completar</span></h2><ul class=\"check\">" +
       l.checklist.map((c, i) =>
         '<li><label><input type="checkbox" data-ck="' + i + '"' + (saved[i] ? " checked" : "") + "><span>" + c + "</span></label></li>").join("") + "</ul>";
   }
-  if (l.dica) h += '<h2><span class="ico">🔦</span>Dica extra</h2>' + l.dica;
+  if (l.dica) h += '<h2><span class="ico" aria-hidden="true">🔦</span>Dica extra</h2>' + l.dica;
 
   const flRefs = l.fl == null ? [] : (Array.isArray(l.fl) ? l.fl : [{ n: l.fl, label: l.flLabel }]);
   flRefs.forEach(ref => {
     const n = typeof ref === "object" ? ref.n : ref;
     if (!FL[n]) return;
     const label = (typeof ref === "object" && ref.label) || FL[n].title;
-    h += '<details class="fl"><summary><div class="fl-ico">📚</div><div><b>Aprofundamento · FiatLux</b><div>' +
-      esc(label) + '</div></div><span class="arrow">▼</span></summary><div class="fl-body">' +
+    h += '<details class="fl"><summary><div class="fl-ico" aria-hidden="true">📚</div><div><b>Aprofundamento · FiatLux</b><div>' +
+      esc(label) + '</div></div><span class="arrow" aria-hidden="true">▼</span></summary><div class="fl-body">' +
       FL[n].html + "</div></details>";
   });
 
   if (l.quiz && l.quiz.length) h += quizHTML(l);
-  if (l.cta) h += '<h2><span class="ico">🚀</span>Chamada para ação</h2>' + l.cta;
+  if (l.cta) h += '<h2><span class="ico" aria-hidden="true">🚀</span>Chamada para ação</h2>' + l.cta;
 
   const isDone = !!state.done[l.id];
   h += '<div class="lesson-nav">';
@@ -315,9 +351,11 @@ function renderLesson(l) {
   main.querySelectorAll("[data-go]").forEach(b => { b.onclick = () => { location.hash = "#/licao/" + b.dataset.go; }; });
   const cbtn = $("#complete-btn", main);
   if (cbtn) cbtn.onclick = () => {
-    state.done[l.id] = true; touchStreak(); save();
+    state.done[l.id] = true; touchStreak();
+    toast("Módulo concluído · +" + GAME.modulo + " XP", "✅");
+    save();
     renderSidebar(l.id); updateHud();
-    if (pct() === 100) { location.hash = "#/certificado"; return; }
+    if (pct() === 100) { toast("Jornada concluída! Seu certificado está pronto.", "🎓"); location.hash = "#/certificado"; return; }
     renderLesson(l);
   };
   main.querySelectorAll("[data-ck]").forEach(ck => {
@@ -331,13 +369,13 @@ function renderLesson(l) {
 
 /* ---------- quiz ---------- */
 function quizHTML(l) {
-  let h = '<div class="quiz"><div class="quiz-head"><span style="font-size:1.4rem">🧪</span><div class="qh-t"><b>Quiz do módulo</b><span>Acerto de primeira: +' + GAME.primeira + " XP · após retentar: +" + GAME.retentativa + ' XP</span></div><span class="qh-score" id="quiz-score"></span></div>';
+  let h = '<div class="quiz"><div class="quiz-head"><span style="font-size:1.4rem" aria-hidden="true">🧪</span><div class="qh-t"><b>Quiz do módulo</b><span>Acerto de primeira: +' + GAME.primeira + " XP · após retentar: +" + GAME.retentativa + ' XP</span></div><span class="qh-score" id="quiz-score"></span></div>';
   l.quiz.forEach((q, qi) => {
     h += '<div class="qq" data-q="' + qi + '"><div class="qq-q">' + (qi + 1) + ". " + esc(q.q) + '</div><div class="opts">';
     q.opts.forEach((o, oi) => {
       h += '<button class="opt" data-o="' + oi + '"><span class="k">' + "ABCD"[oi] + "</span><span>" + esc(o) + "</span></button>";
     });
-    h += '</div><div class="fb"></div></div>';
+    h += '</div><div class="fb" role="status"></div></div>';
   });
   h += "</div>";
   return h;
@@ -403,7 +441,7 @@ function renderJornada() {
 
   let h = '<div class="jornada"><div class="crumb">Gamificação</div><h1 style="font-size:2rem;font-weight:800;color:var(--ink);margin-top:10px">Minha Jornada</h1>';
 
-  h += '<div class="lv-card"><div class="lv-big">' + lv.cur.icon + '</div><div class="lv-info"><div class="lv-title">' + esc(lv.cur.name) + '</div>' +
+  h += '<div class="lv-card"><div class="lv-big" aria-hidden="true">' + lv.cur.icon + '</div><div class="lv-info"><div class="lv-title">' + esc(lv.cur.name) + '</div>' +
     '<div class="lv-sub">' + lv.x + " XP" + (lv.next ? " · faltam " + (lv.next.xp - lv.x) + " XP para <b>" + esc(lv.next.name) + " " + lv.next.icon + "</b>" : " · patente máxima alcançada!") + "</div>" +
     '<div class="lv-bar"><i style="width:' + frac + '%"></i></div></div></div>';
 
@@ -418,7 +456,7 @@ function renderJornada() {
   h += '<h2 style="font-size:1.3rem;font-weight:800;color:var(--ink);margin:40px 0 8px">🏅 Medalhas</h2><p style="color:var(--ptxt-dim);margin-bottom:16px">Cada medalha vale +' + GAME.medalha + ' XP.</p><div class="badges">';
   BADGES.forEach(b => {
     const won = state.badges[b.id];
-    h += '<div class="badge' + (won ? " won" : "") + '"><span class="bd-ico">' + b.icon + '</span><b>' + esc(b.name) + "</b><span class=\"bd-desc\">" + esc(b.desc) + "</span>" +
+    h += '<div class="badge' + (won ? " won" : "") + '"><span class="bd-ico" aria-hidden="true">' + b.icon + '</span><b>' + esc(b.name) + "</b><span class=\"bd-desc\">" + esc(b.desc) + "</span>" +
       (won ? '<span class="bd-date">conquistada em ' + won.split("-").reverse().join("/") + "</span>" : '<span class="bd-date">🔒 bloqueada</span>') + "</div>";
   });
   h += "</div>";
@@ -488,6 +526,12 @@ function toggleSidebar() {
 window.addEventListener("hashchange", route);
 document.addEventListener("DOMContentLoaded", () => {
   $("#menu-btn").onclick = toggleSidebar;
+  const skip = $("#skip-link");
+  if (skip) skip.onclick = e => {
+    e.preventDefault();
+    const m = $("#main");
+    if (m) { m.focus(); m.scrollIntoView(); }
+  };
   const chip = $("#lvl-chip");
   if (chip) chip.onclick = () => { location.hash = "#/jornada"; };
   document.querySelectorAll("[data-start]").forEach(b => {
