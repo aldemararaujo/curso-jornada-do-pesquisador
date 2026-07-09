@@ -1,6 +1,6 @@
 # Fontes do curso "A Jornada do Pesquisador"
 
-O arquivo final do curso é `..\index.html` (autossuficiente — basta abrir no navegador ou hospedar em qualquer servidor estático).
+O arquivo final do curso é `..\index.html` (autossuficiente, basta abrir no navegador ou hospedar em qualquer servidor estático).
 
 Esta pasta contém as fontes usadas para gerá-lo:
 
@@ -26,5 +26,5 @@ Esta pasta contém as fontes usadas para gerá-lo:
 ## Estado do conteúdo
 
 - 19 lições: boas-vindas + 17 módulos + encerramento, com 75 questões de quiz.
-- O capítulo 9 do livro JDP não existia nos PDFs ("Guardando o Tesouro" — armazenamento de dados); o módulo 9 do curso foi construído a partir do capítulo 12 do FiatLux, no mesmo formato dos demais.
+- O capítulo 9 do livro JDP não existia nos PDFs ("Guardando o Tesouro", armazenamento de dados); o módulo 9 do curso foi construído a partir do capítulo 12 do FiatLux, no mesmo formato dos demais.
 - Progresso, respostas de quiz, checklists e nome do aluno ficam no `localStorage` do navegador (chave `jdp-curso-v1`).

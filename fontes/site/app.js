@@ -1,4 +1,4 @@
-/* ============ A Jornada do Pesquisador — engine ============ */
+/* ============ A Jornada do Pesquisador, engine ============ */
 "use strict";
 
 const PHASES = [
@@ -27,9 +27,9 @@ const LEVELS = [
 const BADGES = [
   { id: "primeiro-passo", icon: "🧭", name: "Primeiro Passo", desc: "Conclua o módulo de boas-vindas", when: s => !!s.done["boas-vindas"] },
   { id: "ideia-brilhante", icon: "💡", name: "Ideia Brilhante", desc: "Conclua o módulo Lapidando a Ideia Brilhante", when: s => !!s.done["lapidando-a-ideia"] },
-  { id: "planejador", icon: "🗺️", name: "Planejador", desc: "Complete todos os módulos da Fase 1 — Planejar", when: s => faseDone(s, 1) },
-  { id: "executor", icon: "⚙️", name: "Executor", desc: "Complete todos os módulos da Fase 2 — Executar", when: s => faseDone(s, 2) },
-  { id: "divulgador", icon: "📣", name: "Divulgador", desc: "Complete todos os módulos da Fase 3 — Divulgar", when: s => faseDone(s, 3) },
+  { id: "planejador", icon: "🗺️", name: "Planejador", desc: "Complete todos os módulos da Fase 1, Planejar", when: s => faseDone(s, 1) },
+  { id: "executor", icon: "⚙️", name: "Executor", desc: "Complete todos os módulos da Fase 2, Executar", when: s => faseDone(s, 2) },
+  { id: "divulgador", icon: "📣", name: "Divulgador", desc: "Complete todos os módulos da Fase 3, Divulgar", when: s => faseDone(s, 3) },
   { id: "quiz-perfeito", icon: "🎯", name: "Quiz Perfeito", desc: "Acerte todas as questões de um quiz na primeira tentativa", when: s => LESSONS.some(l => l.quiz && l.quiz.length && l.quiz.every((_, i) => (s.quiz[l.id] || {})[i] === "p")) },
   { id: "mente-afiada", icon: "🧠", name: "Mente Afiada", desc: "Acerte 20 questões na primeira tentativa", when: s => countFirstTry(s) >= 20 },
   { id: "metodico", icon: "✅", name: "Metódico", desc: "Complete 5 checklists práticos inteiros", when: s => LESSONS.filter(l => checklistDone(s, l)).length >= 5 },
@@ -171,7 +171,7 @@ function touchStreak() {
   st.days = st.last === y ? st.days + 1 : 1;
   st.best = Math.max(st.best, st.days);
   st.last = t;
-  if (st.days >= 2) toast(st.days + " dias seguidos de estudo — continue assim!", "🔥");
+  if (st.days >= 2) toast(st.days + " dias seguidos de estudo, continue assim!", "🔥");
 }
 function unlocked(l) {
   if (state.free) return true;
@@ -184,7 +184,7 @@ function firstOpenLesson() {
 function lockedToast(l) {
   const i = LESSONS.indexOf(l);
   const antes = i > 0 ? LESSONS[i - 1].title : "";
-  toast("Módulo bloqueado — conclua <b>" + esc(antes) + "</b> primeiro. Em <b>Minha Jornada</b> você pode destravar todos.", "🔒");
+  toast("Módulo bloqueado, conclua <b>" + esc(antes) + "</b> primeiro. Em <b>Minha Jornada</b> você pode destravar todos.", "🔒");
 }
 
 /* ---------- requisitos para concluir o módulo ---------- */
@@ -267,7 +267,7 @@ function renderLandingState() {
     btn.innerHTML = "▶ Continuar de onde parei <small style='opacity:.75'>(" + pct() + "% concluído)</small>";
   } else if (n === LESSONS.length) {
     btn.hidden = false;
-    btn.textContent = "🎓 Curso concluído — ver certificado";
+    btn.textContent = "🎓 Curso concluído, ver certificado";
     btn.onclick = () => { location.hash = "#/certificado"; };
   } else btn.hidden = true;
 
@@ -453,7 +453,7 @@ function renderLesson(l) {
   if (ckCopy) ckCopy.onclick = () => {
     const tmp = document.createElement("div");
     const linhas = (l.checklist || []).map(c => { tmp.innerHTML = c; return "☐ " + tmp.textContent.trim(); });
-    copyText("Checklist — " + l.title + "\n" + linhas.join("\n"), ckCopy);
+    copyText("Checklist, " + l.title + "\n" + linhas.join("\n"), ckCopy);
   };
   main.querySelectorAll(".pbox").forEach(p => {
     const t = $(".pbox-t", p);
@@ -564,7 +564,7 @@ function renderJornada() {
   });
   h += "</div>";
 
-  h += '<div class="free-box"><label><input type="checkbox" id="free-toggle"' + (state.free ? " checked" : "") + "> <b>Destravar todos os módulos</b> — desative o desbloqueio sequencial e navegue livremente.</label></div>";
+  h += '<div class="free-box"><label><input type="checkbox" id="free-toggle"' + (state.free ? " checked" : "") + "> <b>Destravar todos os módulos</b>, desative o desbloqueio sequencial e navegue livremente.</label></div>";
   h += '<p style="margin-top:26px"><button class="btn btn-paper" id="jr-back">Continuar o curso →</button></p></div>';
 
   $("#view").innerHTML = h;
@@ -592,7 +592,7 @@ function renderCert() {
     '<span class="cert-actions"><button class="btn btn-ghost" style="color:var(--ptxt-dim);border-color:var(--paper-line)" id="cert-print">🖨️ Imprimir / salvar PDF</button></span></div>';
   const today = new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" });
   h += '<div class="cert"><div class="c-kicker">Certificado de Conclusão</div><h2>A Jornada do Pesquisador</h2>' +
-    '<div class="c-sub">Curso online — da dúvida à publicação científica</div>' +
+    '<div class="c-sub">Curso online, da dúvida à publicação científica</div>' +
     '<div class="c-name" id="c-name">' + esc(state.name || "________________") + '</div><div class="c-line"></div>' +
     '<p class="c-body">concluiu com êxito o curso <strong>A Jornada do Pesquisador</strong>, percorrendo os ' + LESSONS.length +
     " módulos das fases de planejamento, execução e divulgação de uma pesquisa científica na área da saúde, com aproveitamento verificado por questionários de fixação.</p>" +

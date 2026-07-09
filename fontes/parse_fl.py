@@ -58,7 +58,7 @@ def flow(lines: list[str]) -> str:
             continue
         step = re.match(r"^(\d+)\.\s+(.*)", line)
         if step and not buf:
-            # item numerado (passo a passo) — acumula até próximo número/fim
+            # item numerado (passo a passo), acumula até próximo número/fim
             mode = "step"
             buf = step.group(2)
             i += 1
@@ -202,7 +202,7 @@ def main() -> None:
             continue
         num = int(m.group(1))
         result[num] = parse_chapter(path, num)
-        print(f"cap {num:2d}: {result[num]['title'][:60]} — {len(result[num]['html'])} chars html")
+        print(f"cap {num:2d}: {result[num]['title'][:60]}, {len(result[num]['html'])} chars html")
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\nOK → {OUT}")
 

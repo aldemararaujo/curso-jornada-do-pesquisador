@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-VERSION = "1.6.0"
+VERSION = "1.6.1"
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
@@ -40,7 +40,7 @@ def main() -> None:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Curso online A Jornada do Pesquisador: da dúvida à publicação científica. Baseado nos livros JDP e FiatLux de Aldemar Araujo Castro.">
-<title>A Jornada do Pesquisador — Curso Online</title>
+<title>A Jornada do Pesquisador, Curso Online</title>
 <link rel="icon" href="{FAVICON}">
 <style>
 {css}
