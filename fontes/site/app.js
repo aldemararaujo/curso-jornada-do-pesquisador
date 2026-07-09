@@ -46,7 +46,7 @@ function load() {
   let raw = {};
   try { raw = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
   const s = Object.assign({
-    done: {}, quiz: {}, check: {}, name: "", last: "",
+    done: {}, quiz: {}, check: {}, fl: {}, name: "", last: "",
     badges: {}, streak: { last: "", days: 0, best: 0 }, free: false, certGen: false,
   }, raw);
   s.streak = Object.assign({ last: "", days: 0, best: 0 }, s.streak || {});
@@ -161,6 +161,43 @@ function lockedToast(l) {
   const i = LESSONS.indexOf(l);
   const antes = i > 0 ? LESSONS[i - 1].title : "";
   toast("Módulo bloqueado — conclua <b>" + esc(antes) + "</b> primeiro. Em <b>Minha Jornada</b> você pode destravar todos.", "🔒");
+}
+
+/* ---------- requisitos para concluir o módulo ---------- */
+function flRefsOf(l) {
+  const refs = l.fl == null ? [] : (Array.isArray(l.fl) ? l.fl : [{ n: l.fl, label: l.flLabel }]);
+  return refs.filter(ref => FL[typeof ref === "object" ? ref.n : ref]);
+}
+function reqsOf(l) {
+  const r = [];
+  if (l.quiz && l.quiz.length) {
+    const qz = state.quiz[l.id] || {};
+    const ok = l.quiz.filter((_, i) => qz[i] === "p" || qz[i] === "ok").length;
+    r.push({ done: ok === l.quiz.length, label: "Responder o quiz do módulo", info: ok + "/" + l.quiz.length + " certas" });
+  }
+  if (l.checklist && l.checklist.length) {
+    const arr = state.check[l.id] || [];
+    const n = l.checklist.filter((_, i) => arr[i]).length;
+    r.push({ done: n === l.checklist.length, label: "Completar o checklist prático", info: n + "/" + l.checklist.length });
+  }
+  const refs = flRefsOf(l);
+  if (refs.length) {
+    const seen = state.fl[l.id] || {};
+    const n = refs.filter((_, i) => seen[i]).length;
+    r.push({
+      done: n === refs.length,
+      label: refs.length > 1 ? "Abrir os aprofundamentos FiatLux" : "Abrir o aprofundamento FiatLux",
+      info: refs.length > 1 ? n + "/" + refs.length : null,
+    });
+  }
+  return r;
+}
+function reqsHTML(l) {
+  const r = reqsOf(l);
+  if (!r.length) return "";
+  return '<div class="reqs" id="reqs-box"><b><span aria-hidden="true">🔓</span> Para concluir este módulo e liberar o próximo:</b><ul>' +
+    r.map(q => '<li class="' + (q.done ? "ok" : "pend") + '">' + esc(q.label) +
+      (q.info ? ' <span class="ri">' + q.info + "</span>" : "") + "</li>").join("") + "</ul></div>";
 }
 
 /* ---------- roteador ---------- */
@@ -319,10 +356,8 @@ function renderLesson(l) {
   }
   if (l.dica) h += '<h2><span class="ico" aria-hidden="true">🔦</span>Dica extra</h2>' + l.dica;
 
-  const flRefs = l.fl == null ? [] : (Array.isArray(l.fl) ? l.fl : [{ n: l.fl, label: l.flLabel }]);
-  flRefs.forEach(ref => {
+  flRefsOf(l).forEach(ref => {
     const n = typeof ref === "object" ? ref.n : ref;
-    if (!FL[n]) return;
     const label = (typeof ref === "object" && ref.label) || FL[n].title;
     h += '<details class="fl"><summary><div class="fl-ico" aria-hidden="true">📚</div><div><b>Aprofundamento · FiatLux</b><div>' +
       esc(label) + '</div></div><span class="arrow" aria-hidden="true">▼</span></summary><div class="fl-body">' +
@@ -333,22 +368,46 @@ function renderLesson(l) {
   if (l.cta) h += '<h2><span class="ico" aria-hidden="true">🚀</span>Chamada para ação</h2>' + l.cta;
 
   const isDone = !!state.done[l.id];
+  if (!isDone) h += reqsHTML(l);
   h += '<div class="lesson-nav">';
   if (prev) h += '<button class="btn btn-ghost" style="color:var(--ptxt-dim);border-color:var(--paper-line)" data-go="' + prev.id + '">← Anterior</button>';
   h += '<span class="spacer"></span>';
   if (isDone) h += '<span class="done-flag">✓ Módulo concluído · +' + GAME.modulo + ' XP</span>';
-  else h += '<button class="btn btn-primary" id="complete-btn">Concluir módulo ✓ <small style="opacity:.7">+' + GAME.modulo + ' XP</small></button>';
+  else {
+    const pode = reqsOf(l).every(q => q.done);
+    h += '<button class="btn btn-primary" id="complete-btn"' + (pode ? "" : ' disabled title="Complete os itens pendentes acima para concluir"') +
+      '>Concluir módulo ✓ <small style="opacity:.7">+' + GAME.modulo + ' XP</small></button>';
+  }
   if (next) {
     if (isDone || state.free) h += '<button class="btn btn-paper" data-go="' + next.id + '">Próximo →</button>';
     else h += '<button class="btn btn-paper" disabled title="Conclua este módulo para desbloquear o próximo">🔒 Próximo</button>';
   }
   h += "</div>";
-  if (!isDone && l.quiz && l.quiz.length) h += '<p class="complete-hint" style="text-align:right;margin-top:10px">Responda o quiz antes de concluir — questões certas de primeira valem mais XP.</p>';
 
   const main = $("#view");
   main.innerHTML = '<article class="lesson">' + h + "</article>";
 
   main.querySelectorAll("[data-go]").forEach(b => { b.onclick = () => { location.hash = "#/licao/" + b.dataset.go; }; });
+
+  const refreshReqs = () => {
+    const box = $("#reqs-box", main);
+    if (box) box.outerHTML = reqsHTML(l);
+    const btn = $("#complete-btn", main);
+    if (btn) {
+      const pode = reqsOf(l).every(q => q.done);
+      if (pode && btn.disabled) toast("Tudo pronto! Você já pode concluir o módulo.", "🔓");
+      btn.disabled = !pode;
+      btn.title = pode ? "" : "Complete os itens pendentes acima para concluir";
+    }
+  };
+  main.querySelectorAll("details.fl").forEach((d, i) => {
+    d.addEventListener("toggle", () => {
+      if (!d.open) return;
+      const rec = state.fl[l.id] || (state.fl[l.id] = {});
+      if (!rec[i]) { rec[i] = true; touchStreak(); save(); refreshReqs(); }
+    });
+  });
+
   const cbtn = $("#complete-btn", main);
   if (cbtn) cbtn.onclick = () => {
     state.done[l.id] = true; touchStreak();
@@ -362,9 +421,10 @@ function renderLesson(l) {
     ck.onchange = () => {
       const arr = state.check[l.id] || (state.check[l.id] = []);
       arr[+ck.dataset.ck] = ck.checked; touchStreak(); save(); updateHud();
+      refreshReqs();
     };
   });
-  wireQuiz(l, main);
+  wireQuiz(l, main, refreshReqs);
 }
 
 /* ---------- quiz ---------- */
@@ -381,7 +441,7 @@ function quizHTML(l) {
   return h;
 }
 
-function wireQuiz(l, root) {
+function wireQuiz(l, root, onChange) {
   if (!l.quiz || !l.quiz.length) return;
   const saved = state.quiz[l.id] || (state.quiz[l.id] = {});
   const scoreEl = $("#quiz-score", root);
@@ -423,6 +483,7 @@ function wireQuiz(l, root) {
         touchStreak(); save();
         lock(+b.dataset.o, saved[qi]);
         updateScore(); updateHud();
+        if (onChange) onChange();
       };
     });
   });

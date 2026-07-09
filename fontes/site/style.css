@@ -260,8 +260,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{
 .qq .fb.err{background:#fdf0f0;color:#8c3232}
 .qq .retry{margin-top:10px;font-size:.85rem;font-weight:700;color:var(--info)}
 
+/* requisitos para concluir o módulo */
+.reqs{margin:44px 0 0;background:#fff;border:1.5px solid #ecd08f;border-left:5px solid var(--amber);
+  border-radius:var(--r);padding:18px 22px}
+.reqs>b{font-size:.92rem;color:var(--ink)}
+.reqs ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.reqs li{display:flex;gap:.6em;align-items:baseline;color:var(--ptxt)}
+.reqs li::before{font-weight:800;flex:none}
+.reqs li.ok{color:var(--ptxt-dim)}
+.reqs li.ok::before{content:"✓";color:var(--ok)}
+.reqs li.pend::before{content:"○";color:var(--amber-ink)}
+.reqs .ri{font-size:.8rem;font-weight:700;color:var(--ptxt-dim);font-variant-numeric:tabular-nums}
+
 /* rodapé da lição */
 .lesson-nav{display:flex;gap:12px;margin-top:52px;align-items:center;flex-wrap:wrap}
+.reqs+.lesson-nav{margin-top:24px}
 .lesson-nav .spacer{flex:1}
 .complete-hint{font-size:.85rem;color:var(--ptxt-dim)}
 .done-flag{display:inline-flex;align-items:center;gap:.5em;padding:.5em 1.1em;border-radius:99px;
