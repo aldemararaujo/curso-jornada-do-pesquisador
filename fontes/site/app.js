@@ -595,8 +595,8 @@ function renderCert() {
     '<div class="c-sub">Curso online, da dúvida à publicação científica</div>' +
     '<div class="c-name" id="c-name">' + esc(state.name || "________________") + '</div><div class="c-line"></div>' +
     '<p class="c-body">concluiu com êxito o curso <strong>A Jornada do Pesquisador</strong>, percorrendo os ' + LESSONS.length +
-    " módulos das fases de planejamento, execução e divulgação de uma pesquisa científica na área da saúde, com aproveitamento verificado por questionários de fixação.</p>" +
-    '<div class="c-meta"><div><b>' + LESSONS.length + ' módulos</b>carga do percurso</div><div><b>' + today + "</b>data de conclusão</div>" +
+    " módulos das fases de planejamento, execução e divulgação de uma pesquisa científica na área da saúde, com carga horária de 8 horas e aproveitamento verificado por questionários de fixação.</p>" +
+    '<div class="c-meta"><div><b>' + LESSONS.length + ' módulos · 8 horas</b>carga horária</div><div><b>' + today + "</b>data de conclusão</div>" +
     '<div><b>Aldemar Araujo Castro</b>autor e instrutor</div></div><div class="c-seal">Fiat ✦ Lux</div></div></div>';
   $("#view").innerHTML = h;
   const apply = () => {
